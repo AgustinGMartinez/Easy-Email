@@ -1,0 +1,156 @@
+<html
+	lang="en"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:v="urn:schemas-microsoft-com:vml"
+	xmlns:o="urn:schemas-microsoft-com:office:office"
+>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="x-apple-disable-message-reformatting" />
+		<title></title>
+		<!-- The title tag shows in email notifications, like Android 4.4. -->
+
+		<!-- Web Font / @font-face : BEGIN -->
+		<!--[if mso]>
+			<style>
+				* {
+					font-family: sans-serif !important;
+				}
+			</style>
+		<![endif]-->
+		<!--[if !mso]><!-->
+		<!-- <link
+			href="https://fonts.googleapis.com/css?family=Roboto:400,700"
+			rel="stylesheet"
+			type="text/css"
+		/> <script>alert("rendered")</script> -->
+		<!--<![endif]-->
+		<!-- Web Font / @font-face : END -->
+
+		<!-- CSS Reset : BEGIN -->
+		<style>
+			html,
+			body {
+				margin: 0 auto !important;
+				padding: 0 !important;
+				height: 100% !important;
+				width: 100% !important;
+			}
+
+			/* body {
+				font-family: 'Helvetica', serif;
+			} */
+
+			* {
+				-ms-text-size-adjust: 100%;
+				-webkit-text-size-adjust: 100%;
+			}
+
+			div[style*='margin: 16px 0'] {
+				margin: 0 !important;
+			}
+
+			table,
+			td {
+				mso-table-lspace: 0pt !important;
+				mso-table-rspace: 0pt !important;
+			}
+
+			table {
+				border-spacing: 0;
+				border-collapse: collapse;
+				margin: 0 auto;
+			}
+
+			a {
+				border-bottom: 0;
+				color: inherit;
+				text-decoration: none;
+				font-size: inherit;
+				font-family: inherit;
+				font-weight: inherit;
+				line-height: inherit;
+			}
+
+			/* What it does: Uses a better rendering method when resizing images in IE. */
+			img {
+				-ms-interpolation-mode: bicubic;
+			}
+
+			a[x-apple-data-detectors],
+			.unstyle-auto-detected-links a,
+			.aBn {
+				border-bottom: 0 !important;
+				cursor: default !important;
+				color: inherit !important;
+				text-decoration: none !important;
+				font-size: inherit !important;
+				font-family: inherit !important;
+				font-weight: inherit !important;
+				line-height: inherit !important;
+			}
+
+			/* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */
+
+			/* iPhone 4, 4S, 5, 5S, 5C, and 5SE */
+			@media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
+				u ~ div .email-container {
+					min-width: 320px !important;
+				}
+			}
+			/* iPhone 6, 6S, 7, 8, and X */
+			@media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
+				u ~ div .email-container {
+					min-width: 375px !important;
+				}
+			}
+			/* iPhone 6+, 7+, and 8+ */
+			@media only screen and (min-device-width: 414px) {
+				u ~ div .email-container {
+					min-width: 414px !important;
+				}
+			}
+		</style>
+
+		<!-- What it does: Makes background images in 72ppi Outlook render at correct size. -->
+		<!--[if gte mso 9]>
+			<xml>
+				<o:OfficeDocumentSettings>
+					<o:AllowPNG />
+					<o:PixelsPerInch>96</o:PixelsPerInch>
+				</o:OfficeDocumentSettings>
+			</xml>
+		<![endif]-->
+
+		<!-- CSS Reset : END -->
+
+		<!-- Progressive Enhancements : BEGIN -->
+		<style>
+			    .email-container p {
+			        font-size: 17px !important;
+			    }
+			}
+		</style>
+		<!-- Progressive Enhancements : END -->
+	</head>
+	<body>
+		<div
+			id="workzone"
+			style="margin: auto; width: 100%; display: flex; justify-content: center;"
+		></div>
+		<div style="width: 800px; display: block; margin: auto;">
+			<button onclick="getResultEE()">Get HTML</button>
+			<textarea
+				style="width: 100%"
+				name=""
+				id="result"
+				cols="60"
+				rows="10"
+			></textarea>
+		</div>
+		<script src="easy-email.js"></script>
+		<script src="work.js"></script>
+	</body>
+</html>

@@ -1,5 +1,5 @@
-function getResultEE() {
-	EE().getHTML(document.getElementById('result'));
+function getResultEE(target) {
+	EE().getHTML(target || document.getElementById('result'));
 }
 
 const EE = (function() {
@@ -101,10 +101,7 @@ const EE = (function() {
 
 			let parent;
 
-			if (
-				this.currentElement &&
-				this.currentElement.tagName === 'TABLE'
-			) {
+			if (this.currentElement && this.currentElement.tagName === 'TABLE') {
 				parent = this.currentElement.childNodes[0];
 			} else {
 				let anaylizingElement = this.currentElement;
@@ -114,10 +111,7 @@ const EE = (function() {
 				} while (parent.tagName !== 'TR');
 				let newParent = parent.parentNode;
 				// REMOVE TR IF IT IS EMPTY, SO WE DONT APPEND A NEW TR O A TR WITH AN EMPTY TD
-				if (
-					newParent.childNodes[0].childNodes[0].childNodes.length ===
-					0
-				) {
+				if (newParent.childNodes[0].childNodes[0].childNodes.length === 0) {
 					parent.remove();
 				}
 				parent = newParent;
@@ -154,8 +148,9 @@ const EE = (function() {
 			const parentTd = this.currentElement;
 
 			// CREATE A NEW TABLE, SET ITS WIDTH, APPEND IT TO CURRENT ELEMENT AND CREATE A ROW BEFORE ADDING THE COLUMNS
+			const width = this.get('container').style.width.slice(0, -2);
 			this.define(this.currentElement.parentNode.id + '-container')
-				.width(this.get('container').style.width.slice(0, -2))
+				.width(width)
 				.appendTo(parentTd)
 				.row();
 
@@ -163,9 +158,11 @@ const EE = (function() {
 				let td;
 				if (i === 0) {
 					td = this.currentElement;
+					td.style.width = width / n + 'px';
 				} else {
 					td = document.createElement('td');
 					td.vAlign = 'top';
+					td.style.width = width / n + 'px';
 				}
 				// IF CURRENT ROW DOESNT HAVE AN ID, IT MEANS WE ARE IN A NESTED TABLE. WE NEED THAT ID SO WE SEARCH IT IN THE WHILE LOOP. ELSE, JUST USE THE CURRENT TR
 				if (!this.currentElement.parentNode.id) {
@@ -189,21 +186,32 @@ const EE = (function() {
 		}
 
 		spaceBetween(n) {
+			// I clone it so i can iterate it while changing the original
 			let cloneRow = this.currentElement.cloneNode(true);
-			let appendedCount = 0;
-			for (
-				let i = 0;
-				i < Array.from(cloneRow.childNodes).length - 1;
-				i++
-			) {
+			let appendedCount = 0,
+				parentWidth = this.currentElement.offsetWidth;
+			// so we calculate how much pixels they are taking up
+			let appendedSpaces = [];
+			for (let i = 0; i < Array.from(cloneRow.childNodes).length - 1; i++) {
 				const td = document.createElement('td');
 				td.vAlign = 'top';
 				const span = document.createElement('span');
 				span.innerHTML = '&nbsp;'.repeat(n);
 				td.appendChild(span);
+				// this part does the trick, it will append spaces always after the next td, except for the last one
 				this.currentElement.childNodes[i + appendedCount].after(td);
 				appendedCount++;
+				// so we calculate how much pixels they are taking up
+				appendedSpaces.push(td);
 			}
+			// all of this stuff so that we set the width in the style of each column. Sadly, this is necessary for the correct alignment of columns in mobile gmail
+			let spaceTakenUp = 0;
+			appendedSpaces.forEach(space => (spaceTakenUp += space.offsetWidth));
+			let remaining = parentWidth - spaceTakenUp;
+			Array.from(cloneRow.childNodes).forEach((_, i) => {
+				this.currentElement.childNodes[i * 2].style.width =
+					remaining / cloneRow.childNodes.length + 'px';
+			});
 			return this;
 		}
 
@@ -252,74 +260,137 @@ const EE = (function() {
 			return this;
 		}
 
-		button(options, id = null, subquery = null) {
-			if (
-				typeof options.paddingX === 'undefined' ||
-				options.paddingX == 0
-			)
-				options.paddingX = 1;
-			if (
-				typeof options.paddingY === 'undefined' ||
-				options.paddingY < 10
-			) {
+		button(options, id = null) {
+			if (!options.paddingX || options.paddingX == 0) options.paddingX = 1;
+			if (!options.paddingY || options.paddingY < 10) {
 				options.paddingY = 10;
 			}
 			if (options.paddingY > 10)
 				console.warn(
-					"PaddingY greater than 10 in button won't work correctly in outlook. You can't still use it for the rest of the email clients, but beware of possible layout issues if you're relying on padding for it."
+					"PaddingY greater than 10 in button won't work correctly in outlook. You can still use it for the rest of the email clients, but beware of possible layout issues if you're relying on padding for it."
 				);
 
 			this.checkNan(options.width, 'Button');
 			this.checkNan(options.fontSize, 'Button');
 			this.checkNan(options.paddingX, 'Button');
 			this.checkNan(options.borderRadius, 'Button');
-			const button = `
-			<!--[if mso]>
-			  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${
-					options.to
-				}" style="height:36px;v-text-anchor:middle;width:${
-				options.width
-			}px;" arcsize="${options.borderRadius}%" strokecolor="${
-				options.backgroundColor
-			}" fillcolor="${options.backgroundColor}">
-			    <w:anchorlock/>
-			    <center style="color:${options.color};font-family:${
-				this.globalFont
-			}; font-size:${16 / 1.3}pt;">${options.text}</center>
-				</v:roundrect>
-				<div style="width:0px; height:0px; overflow:hidden; display:none; visibility:hidden; mso-hide:all;">
-			<![endif] -->
-				
-				<a id="${id || ''}" style="border-radius: ${
-				options.borderRadius
-			}%; webkit-border-radius: ${
-				options.borderRadius
-			}%; moz-border-radius: ${options.borderRadius}%; font-family:${
-				this.fallbackFont
-			}; background-color: ${
-				options.backgroundColor
-			}; border-bottom: 0; color: inherit; text-decoration: none; font-size: inherit; font-weigth: inherit; line-height: inherit; width: ${
-				options.width
-			}; border-top: ${options.paddingY}px solid ${
-				options.backgroundColor
-			}; border-bottom: ${options.paddingY}px solid ${
-				options.backgroundColor
-			}; border-right: ${options.paddingX}px solid ${
-				options.backgroundColor
-			}; border-left: ${options.paddingX}px solid ${
-				options.backgroundColor
-			}" valign="middle" href="${options.to}">
-				<span style="font-family: ${this.globalFont}; margin: 0; font-size: ${16 /
-				1.3}pt; background-color: ${options.backgroundColor}; color: ${
-				options.color
-			}" valign="middle">
-						${options.text}
-					</span>
-			</a>
-			
-			<!--[if mso]></div><![endif]-->`;
+
 			if (
-				typeof this.currentElement.childNodes[0] !== 'undefined' &&
+				this.currentElement.tagName === 'TD' &&
+				this.currentElement.childNodes[0]
+			) {
+				throw new Error(
+					'Buttons can only be created in empty colummns or empty rows'
+				);
+			}
+
+			// this.currentElement.setAttribute('align', 'center');
+			// this.currentElement.setAttribute('bgcolor', options.backgroundColor);
+			// this.currentElement.style = `border-radius: ${
+			// 	options.borderRadius
+			// }px; background-color: ${options.backgroundColor}`;
+
+			let alignStyle = null;
+			if (options.align) {
+				if (options.align === 'center')
+					throw new Error(
+						'Can\'t align button center this way, try "horizontalAlign("center")" in its parent instead.'
+					);
+				if (options.align === 'left') {
+					// for modern engines
+					alignStyle = 'margin-left: 0px; margin-right: auto;';
+					// for old engines
+					this.currentElement.align = 'left';
+				}
+				if (options.align === 'right') {
+					// for modern engines
+					alignStyle = 'margin-left: auto; margin-right: 0px;';
+					// for old engines
+					this.currentElement.align = 'right';
+				}
+			}
+
+			let button = `
+      <table border="0" cellspacing="0" cellpadding="0" style="${alignStyle}">
+        <tr>
+					<td align="center" style="border-radius: ${options.borderRadius}px; background-color: ${
+				options.backgroundColor
+			}" bgcolor="${options.backgroundColor}">
+						<a href=${options.to}" target="_blank" style="font-size: ${
+				options.fontSize
+			}px; font-family: ${this.fallbackFont}; color: ${
+				options.color
+			}; text-decoration: none; text-decoration: none;border-radius: ${
+				options.borderRadius
+			}px; padding: ${options.paddingY}px ${0}px; border: 1px solid ${
+				options.backgroundColor
+			}; display: inline-block;">
+							<span style="font-family: ${this.globalFont}">${options.text}</span>
+						</a>
+					</td>
+        </tr>
+      </table>
+				`;
+
+			// <table width="100%" border="0" cellspacing="0" cellpadding="0">
+			// 	<tr>
+			// 		<td>
+			// 			<table border="0" cellspacing="0" cellpadding="0">
+			// 				<tr>
+			// 					<td align="center" style="border-radius: ${options.borderRadius}px;" bgcolor="${options.backgroundColor}">
+			// 						<a href="${options.to}" target="_blank" style="font-size: ${options.fontSize}px; font-family: ${this.globalFont}; color: ${options.color}; text-decoration: none; text-decoration: none;border-radius: ${options.borderRadius}px; padding: ${options.paddingY} ${options.paddingX}; border: 1px solid ${options.backgroundColor}; display: inline-block;">${options.text}</a>
+			// 					</td>
+			// 				</tr>
+			// 			</table>
+			// 		</td>
+			// 	</tr>
+			// </table>
+
+			// const button = `
+			// <!--[if mso]>
+			//   <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${
+			// 		options.to
+			// 	}" style="height:36px;v-text-anchor:middle;width:${
+			// 	options.width
+			// }px;" arcsize="${options.borderRadius}%" strokecolor="${
+			// 	options.backgroundColor
+			// }" fillcolor="${options.backgroundColor}">
+			//     <w:anchorlock/>
+			//     <center style="color:${options.color};font-family:${this.globalFont}; font-size:${16 /
+			// 	1.3}pt;">${options.text}</center>
+			// 	</v:roundrect>
+			// 	<div style="width:0px; height:0px; overflow:hidden; display:none; visibility:hidden; mso-hide:all;">
+			// <![endif] -->
+
+			// 	<a id="${id || ''}" style="border-radius: ${
+			// 	options.borderRadius
+			// }px; webkit-border-radius: ${options.borderRadius}px; moz-border-radius: ${
+			// 	options.borderRadius
+			// }px; font-family:${this.fallbackFont}; background-color: ${
+			// 	options.backgroundColor
+			// }; border-bottom: 0; color: inherit; text-decoration: none; font-size: inherit; font-weigth: inherit; line-height: inherit; width: ${
+			// 	options.width
+			// }; border-top: ${options.paddingY}px solid ${
+			// 	options.backgroundColor
+			// }; border-bottom: ${options.paddingY}px solid ${
+			// 	options.backgroundColor
+			// }; border-right: ${options.paddingX}px solid ${
+			// 	options.backgroundColor
+			// }; border-left: ${options.paddingX}px solid ${
+			// 	options.backgroundColor
+			// }" valign="middle" href="${options.to}">
+			// 	<span style="font-family: ${this.globalFont}; margin: 0; font-size: ${16 /
+			// 	1.3}pt; background-color: ${options.backgroundColor}; color: ${
+			// 	options.color
+			// }" valign="middle">
+			// 			${options.text}
+			// 		</span>
+			// </a>
+
+			// <!--[if mso]></div><![endif]-->`;
+
+			if (
+				this.currentElement.childNodes[0] &&
 				this.currentElement.childNodes[0].tagName === 'TABLE'
 			) {
 				throw new Error('Create a row before attaching a button');
@@ -328,24 +399,23 @@ const EE = (function() {
 			}
 
 			if (id) {
-				this.elements[id] = this.currentElement.childNodes[3];
+				this.elements[
+					id
+				] = this.currentElement.childNodes[1].childNodes[1].childNodes[0].childNodes[1]; // td
+				this.elements[id].id = id;
 			}
 
-			const subId = id + 'c-' + (Math.random() * 1000).toFixed(2);
+			this.currentElement = this.currentElement.childNodes[1].childNodes[1].childNodes[0].childNodes[1]; // td
 
-			this.elements[
-				subId
-			] = this.currentElement.childNodes[3].childNodes[1];
-			this.currentElement.childNodes[3].childNodes[1].id = subId;
+			const subId = id + 'c-' + (Math.random() * 10000).toFixed(2);
+
+			this.elements[subId] = this.currentElement.childNodes[1];
+			this.currentElement.childNodes[1].id = subId;
 			if (options.paddingX) {
 				this.manageSubquery(
-					this.currentElement.childNodes[3].childNodes[1],
-					span =>
-						span.marginX(
-							Number(options.paddingX),
-							true,
-							options.backgroundColor
-						)
+					this.elements[subId], // a (button)
+					a =>
+						a.marginX(Number(options.paddingX), true, options.backgroundColor)
 				);
 			}
 
@@ -472,14 +542,15 @@ const EE = (function() {
 
 		horizontalAlign(type) {
 			this.currentElement.align = type;
-			this.currentElement.style.textAlign = type;
-			this.currentElement.style.marginLeft = 'auto';
-			this.currentElement.style.marginRight = 'auto';
-			if (
-				['IMG', 'P', 'SPAN', 'A'].includes(this.currentElement.tagName)
-			) {
+			if (getComputedStyle(this.currentElement, null).display !== 'table-cell') {
+				// text align center in table cells will strangely make them stop being centered!!
+				this.currentElement.style.textAlign = type;
+			}
+			this.currentElement.style.marginLeft = type === 'left' ? '0px' : 'auto';
+			this.currentElement.style.marginRight = type === 'right' ? '0px' : 'auto';
+			if (['IMG', 'P', 'SPAN', 'A'].includes(this.currentElement.tagName)) {
 				throw new Error(
-					"Don't use horizontalAlign in contenct Elementes such as img, p or span. Use this method on its parent instead."
+					"Don't use horizontalAlign in content Elementes such as img, p or span. Use this method on its parent instead."
 				);
 			}
 			return this;
@@ -578,14 +649,7 @@ const EE = (function() {
 			return this;
 		}
 
-		img(
-			src,
-			size = 'original',
-			id = null,
-			alt = null,
-			link = null,
-			subquery = null
-		) {
+		img(src, size = 'original', id = null, alt = null, link = null, subquery = null) {
 			if (!src) {
 				throw new Error('Src param is required for the img method');
 			}
@@ -674,9 +738,7 @@ const EE = (function() {
 		}
 
 		fontSize(pt) {
-			if (
-				['SPAN', 'P', 'IMG', 'A'].includes(this.currentElement.tagName)
-			) {
+			if (['SPAN', 'P', 'IMG', 'A'].includes(this.currentElement.tagName)) {
 				this.currentElement.style.fontSize = pt / 1.3 + 'pt';
 			} else {
 				throw new Error(
@@ -715,10 +777,7 @@ const EE = (function() {
 			span.innerHTML = '&nbsp;'.repeat(n);
 			span.style.verticalAlign = 'middle';
 			span.setAttribute('valign', 'middle');
-			this.currentElement.insertBefore(
-				span,
-				this.currentElement.firstChild
-			);
+			this.currentElement.insertBefore(span, this.currentElement.firstChild);
 			return this;
 		}
 
@@ -731,10 +790,7 @@ const EE = (function() {
 			span2.innerHTML = '&nbsp;'.repeat(n + 2);
 			span2.style.verticalAlign = 'middle';
 			span2.setAttribute('valign', 'middle');
-			this.currentElement.insertBefore(
-				span,
-				this.currentElement.firstChild
-			);
+			this.currentElement.insertBefore(span, this.currentElement.firstChild);
 			this.currentElement.appendChild(span2);
 			if (isButton) {
 				const heightFix = document.createElement('span');
@@ -773,8 +829,7 @@ const EE = (function() {
 						getComputedStyle(this.currentElement, null).display
 				)
 			) {
-				if (type === 'top')
-					this.currentElement.style.marginTop = 3 * n + 'px';
+				if (type === 'top') this.currentElement.style.marginTop = 3 * n + 'px';
 				else if (type === 'bottom')
 					this.currentElement.style.marginBottom = 3 * n + 'px';
 				else if (type === 'both') {
@@ -839,8 +894,7 @@ const EE = (function() {
 		borderRadius(px) {
 			this.checkNan(px, 'Border radius');
 			if (this.currentElement.tagName === 'TD') {
-				const table = this.currentElement.parentNode.parentNode
-					.parentNode;
+				const table = this.currentElement.parentNode.parentNode.parentNode;
 				table.style.borderCollapse = 'separate';
 				table.style.webkitBorderRadius = px + 'px';
 				table.style.mozBorderRadius = px + 'px';
@@ -874,9 +928,7 @@ const EE = (function() {
 					li.innerHTML = innerFontWrapper;
 				} else if (typeof item === 'object') {
 					if (!item.id)
-						throw new Error(
-							"Don't use object for li without an id"
-						);
+						throw new Error("Don't use object for li without an id");
 					const innerFontWrapper = `<span valign="middle" style='font-family: ${
 						this.globalFont
 					}'>${item.content}</span>`;

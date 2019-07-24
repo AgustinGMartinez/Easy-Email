@@ -243,37 +243,63 @@ EE()
 			{
 				content: 'A list item.',
 				id: 'ul-1-1',
-				style: li => li.marginY(3)
+				style: li => li.marginY(3),
 			},
 			{
 				content: 'Another list item here.',
 				id: 'ul-1-2',
-				style: li => li.marginY(3)
+				style: li => li.marginY(3),
 			},
 			{
 				content: 'Everyone gets a list item, list items for everyone!',
 				id: 'ul-1-3',
-				style: li => li.marginY(3)
-			}
+				style: li => li.marginY(3),
+			},
 		],
 		undefined,
 		'first-list',
 		ul => ul.marginY(5).color('#555555')
 	)
 	.row('row-5')
+	.columns(2)
+	.spaceBetween(20);
+
+EE()
+	.select('row-5-1')
 	.horizontalAlign('center')
 	.paddingY(20)
 	.button(
 		{
 			to: 'https://google.com/',
-			text: 'Centered Primary Button',
-			width: '200',
+			text: 'Button',
+			width: '400',
 			backgroundColor: '#222',
 			color: '#fff',
 			fontSize: '16',
-			paddingX: '10',
+			paddingX: '3',
 			paddingY: '10',
-			borderRadius: 20 // falta arreglar tema porcentaje, se ve cualquiera
+			borderRadius: 50, // falta arreglar tema porcentaje, se ve cualquiera,
+			align: 'left',
 		},
-		'main-button'
+		'main-button1'
+	);
+
+EE()
+	.select('row-5-2')
+	.horizontalAlign('center')
+	.paddingY(20)
+	.button(
+		{
+			to: 'https://google.com/',
+			text: 'Button',
+			width: '400',
+			backgroundColor: '#222',
+			color: '#fff',
+			fontSize: '16',
+			paddingX: '3',
+			paddingY: '10',
+			borderRadius: 50, // falta arreglar tema porcentaje, se ve cualquiera,
+			align: 'right',
+		},
+		'main-button2'
 	);
